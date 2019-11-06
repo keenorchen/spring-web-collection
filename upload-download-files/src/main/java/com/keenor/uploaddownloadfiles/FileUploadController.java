@@ -79,7 +79,6 @@ public class FileUploadController {
         Resource resource = storageService.loadAsResource(filename);
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
                 "attachment; filename=\"" + resource.getFilename() + "\"").body(resource);
-
     }
 
 }
