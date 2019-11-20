@@ -1,20 +1,17 @@
 package com.keenor.resttempalate;
 
-import com.keenor.resttempalate.config.HttpClientConfig;
 import com.keenor.resttempalate.config.RestTemplateConfig;
-import com.keenor.resttempalate.config.RestTemplateHttpClientConfig;
+import com.keenor.resttempalate.exception.ApiCodeException;
+import com.keenor.resttempalate.interceptor.UserAgentInterceptor;
 import com.keenor.resttempalate.pojo.BookVo;
 import com.keenor.resttempalate.pojo.BookWrapVo;
 import com.keenor.resttempalate.pojo.Result;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -24,11 +21,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.File;
-import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +41,7 @@ class BasicDemoTests {
     RestTemplate restTemplate;
 
     @Test
-    void testGet() {
+    void testGet() throws ApiCodeException {
         // 不带参数
         String url = URL + "/list";
         BookWrapVo wrapVo = restTemplate.getForObject(url, BookWrapVo.class);
@@ -80,13 +75,13 @@ class BasicDemoTests {
     @Test
     void testGetForEntity() {
         String url = URL + "/detail?id={?}";
-        ResponseEntity<Result> res = restTemplate.getForEntity(url, Result.class);
+        ResponseEntity<Result> res = restTemplate.getForEntity(url, Result.class, 1);
         System.out.println(res);
     }
 
 
     @Test
-    void testPostForm() {
+    void testPostForm() throws ApiCodeException {
         String url = URL + "/addByForm";
         String title = "明朝那些事";
         String author = "当年明月";
@@ -121,7 +116,7 @@ class BasicDemoTests {
     }
 
     @Test
-    void testPostJson() {
+    void testPostJson() throws ApiCodeException {
         String url = URL + "/addByJson";
         String title = "丘吉尔回忆录";
         String author = "丘吉尔";
@@ -146,7 +141,7 @@ class BasicDemoTests {
         String url = URL + "/agent?name=哈哈~";
         RestTemplate restTemplate = new RestTemplate();
         // 注释后会抛出 HttpClientErrorException
-        //        restTemplate.setInterceptors(Collections.singletonList(new UserAgentInterceptor()));
+                restTemplate.setInterceptors(Collections.singletonList(new UserAgentInterceptor()));
         ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
         System.out.println("GET HEADER => " + response.getStatusCode() + " | " + response.getBody());
     }
@@ -158,8 +153,8 @@ class BasicDemoTests {
         params.add("name", "O(∩_∩)O哈哈~");
 
         HttpHeaders headers = new HttpHeaders();
-        //        headers.add(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-        //                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36");
+                headers.add(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36");
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
         RestTemplate restTemplate = new RestTemplate();
@@ -180,16 +175,44 @@ class BasicDemoTests {
         System.out.println("POST 5-1 => " + response);
     }
 
+    @Test
+    void testApiError() {
+        String url = URL + "/apiError";
+        Result<BookVo> result = null;
+        try {
+            result = getForType(url, new ParameterizedTypeReference<Result<BookVo>>() {});
+        } catch (ApiCodeException e) {
+            e.printStackTrace();
+            System.out.println("=> "+e.getMessage());
+        }
+        System.out.println("GET 6-1 => " + result);
+    }
 
-    public <T> T getForType(String url, ParameterizedTypeReference<T> responseType, Object... uriVariables) {
-        return restTemplate.exchange(url, HttpMethod.GET, null, responseType, uriVariables).getBody();
+    public <T> T getForType(String url, ParameterizedTypeReference<T> responseType, Object... uriVariables) throws ApiCodeException {
+        T body = restTemplate.exchange(url, HttpMethod.GET, null, responseType, uriVariables).getBody();
+        handleApiError(body);
+        return body;
     }
 
     public <T> T getForType(String url, ParameterizedTypeReference<T> responseType, Map<String, ?> uriVariables) {
         return restTemplate.exchange(url, HttpMethod.GET, null, responseType, uriVariables).getBody();
     }
 
-    public <T> T postForType(String url, @Nullable Object request, ParameterizedTypeReference<T> responseType, Object... uriVariables) {
+    public <T> T postForType(String url, @Nullable Object request, ParameterizedTypeReference<T> responseType, Object... uriVariables) throws ApiCodeException {
+        HttpEntity<?> requestEntity = getHttpEntity(request);
+        T body = restTemplate.exchange(url, HttpMethod.POST, requestEntity, responseType, uriVariables).getBody();
+        handleApiError(body);
+        return body;
+    }
+
+    public <T> T postForType(String url, @Nullable Object request, ParameterizedTypeReference<T> responseType, Map<String, ?> uriVariables) throws ApiCodeException {
+        HttpEntity<?> requestEntity = getHttpEntity(request);
+        T body = restTemplate.exchange(url, HttpMethod.POST, requestEntity, responseType, uriVariables).getBody();
+        handleApiError(body);
+        return body;
+    }
+
+    private HttpEntity<?> getHttpEntity(@Nullable Object request) {
         HttpEntity<?> requestEntity;
         if (request instanceof HttpEntity) {
             requestEntity = (HttpEntity<?>) request;
@@ -198,12 +221,16 @@ class BasicDemoTests {
         } else {
             requestEntity = HttpEntity.EMPTY;
         }
-        return restTemplate.exchange(url, HttpMethod.POST, requestEntity, responseType, uriVariables).getBody();
+        return requestEntity;
     }
 
-    public <T> T postForType(String url, @Nullable Object request, ParameterizedTypeReference<T> responseType, Map<String, ?> uriVariables) {
-        return restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request), responseType, uriVariables).getBody();
+    private <T> void handleApiError(T body) throws ApiCodeException {
+        if (body instanceof Result) {
+            Result result = (Result) body;
+            if (!result.isSuccess()) {
+                throw new ApiCodeException(result.getCode(), result.getMsg());
+            }
+        }
     }
-
 
 }

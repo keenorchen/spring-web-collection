@@ -2,7 +2,7 @@ package com.keenor.resttempalate.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.keenor.resttempalate.config.ErrorCode;
+import com.keenor.resttempalate.exception.ErrorCode;
 
 import java.io.Serializable;
 

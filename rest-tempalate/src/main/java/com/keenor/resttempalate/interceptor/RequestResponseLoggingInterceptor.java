@@ -1,4 +1,4 @@
-package com.keenor.resttempalate.config;
+package com.keenor.resttempalate.interceptor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

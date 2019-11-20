@@ -1,4 +1,4 @@
-package com.keenor.resttempalate.config;
+package com.keenor.resttempalate.interceptor;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;

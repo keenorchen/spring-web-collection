@@ -1,6 +1,6 @@
 package com.keenor.resttempalate.mock;
 
-import com.keenor.resttempalate.config.ErrorCode;
+import com.keenor.resttempalate.exception.ErrorCode;
 import com.keenor.resttempalate.pojo.BookReq;
 import com.keenor.resttempalate.pojo.BookVo;
 import com.keenor.resttempalate.pojo.Result;
@@ -93,7 +93,7 @@ public class MockController {
     }
 
     @GetMapping("/apiError")
-    public Result<List<BookVo>> apiError() {
+    public Result<BookVo> apiError() {
         return Result.ofError(ErrorCode.DB_QUERY_NOT_EXIST);
     }
 

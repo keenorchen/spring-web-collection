@@ -1,11 +1,15 @@
 package com.keenor.resttempalate.config;
 
+import com.keenor.resttempalate.interceptor.RequestResponseLoggingInterceptor;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.client.BufferingClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
+import java.util.List;
 
 public class RestTemplateInterceptorConfig {
 
@@ -24,6 +28,8 @@ public class RestTemplateInterceptorConfig {
         restTemplate.setRequestFactory(new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()));
         //        restTemplate.setMessageConverters(Collections.singletonList(mappingJacksonHttpMessageConverter()));
         restTemplate.setInterceptors(Collections.singletonList(new RequestResponseLoggingInterceptor()));
+
+        List<HttpMessageConverter<?>> messageConverters = restTemplate.getMessageConverters();
 
         return restTemplate;
     }
