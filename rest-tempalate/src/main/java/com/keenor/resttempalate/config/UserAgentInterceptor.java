@@ -1,4 +1,4 @@
-package com.keenor.resttempalate;
+package com.keenor.resttempalate.config;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;

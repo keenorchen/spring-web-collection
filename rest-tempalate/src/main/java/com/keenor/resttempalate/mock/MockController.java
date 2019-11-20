@@ -1,6 +1,6 @@
 package com.keenor.resttempalate.mock;
 
-import com.keenor.resttempalate.ErrorCode;
+import com.keenor.resttempalate.config.ErrorCode;
 import com.keenor.resttempalate.pojo.BookReq;
 import com.keenor.resttempalate.pojo.BookVo;
 import com.keenor.resttempalate.pojo.Result;
@@ -18,19 +18,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -132,7 +129,7 @@ public class MockController {
                 .setContent("在生活中主动保持理性的态度—很少有人会把每天上下班的时间记录下来，然后进行统计分析");
         bookVos.add(bookVo);
         bookVos.add(bookVo1);
-        bookVos.add(bookVo2);
+        bookVos.add(bookVo2);new RestTemplate();
     }
 
 

@@ -97,7 +97,31 @@ Json:
 - headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
 - 注意下post参数，是放在Map容器中，而不是之前的MultiValueMap
 
-### exchange 方式
+## exchange 方式
 支持泛型传参
+
+## 坑
+- RestTemplate中url编码解码的逻辑和JDK的URLEncode/URLDecode不一致，Spring 转换 = &  不转换 =
+- 官方解释：根据 RFC 3986 加号等符号的确实可以出现在参数中的，而且不需要编码，有问题的在于服务端的解析没有与时俱进
+- 当使用RestTemplate发起请求时，如果请求参数中有需要url编码时，应传入URI对象而不是字符串
+
+
+## 扩展性
+### 自定义HTTP库
+RestTemplate默认使用的是JDK中的HttpURLConnection实现的，如果你想要切换到其他的HTTP库，
+例如，Apache HttpComponents, Netty和OkHttp，只需要调用setRequestFactory方法来进行设置，
+甚至可以使用自己实现的类型，只需要继承自ClientHttpRequestFactory
+
+### 响应错误处理
+RestTemplate默认使用的是DefaultResponseErrorHandler响应错误处理器，你可以调用setErrorHandler来定制自己的响应错误处理器。
+
+### 
+
+
+## reference
+- https://howtodoinjava.com/spring-boot2/resttemplate/resttemplate-httpclient-java-config/
+- 
+- 
+- 
 
 

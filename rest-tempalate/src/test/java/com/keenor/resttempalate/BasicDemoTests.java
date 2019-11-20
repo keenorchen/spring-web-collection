@@ -1,11 +1,17 @@
 package com.keenor.resttempalate;
 
+import com.keenor.resttempalate.config.HttpClientConfig;
+import com.keenor.resttempalate.config.RestTemplateConfig;
+import com.keenor.resttempalate.config.RestTemplateHttpClientConfig;
 import com.keenor.resttempalate.pojo.BookVo;
 import com.keenor.resttempalate.pojo.BookWrapVo;
 import com.keenor.resttempalate.pojo.Result;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
@@ -14,6 +20,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.ResourceUtils;
@@ -28,15 +36,14 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-class RestTemplateTests {
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = RestTemplateConfig.class)
+class BasicDemoTests {
 
-    private RestTemplate restTemplate;
     public static final String URL = "http://localhost:8080/book/";
 
-    @BeforeEach
-    void init() {
-        restTemplate = new RestTemplate();
-    }
+    @Autowired
+    RestTemplate restTemplate;
 
     @Test
     void testGet() {

@@ -1,4 +1,4 @@
-package com.keenor.resttempalate;
+package com.keenor.resttempalate.config;
 
 /**
  * Description:
