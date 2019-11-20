@@ -14,9 +14,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.LinkedMultiValueMap;
@@ -40,6 +38,9 @@ class BasicDemoTests {
     @Autowired
     RestTemplate restTemplate;
 
+    @Autowired
+    RestClientUtil restClientUtil;
+
     @Test
     void testGet() throws ApiCodeException {
         // 不带参数
@@ -47,7 +48,7 @@ class BasicDemoTests {
         BookWrapVo wrapVo = restTemplate.getForObject(url, BookWrapVo.class);
         System.out.println("GET 1-1 => " + wrapVo);
 
-        List<BookVo> result2 = getForType(url, new ParameterizedTypeReference<Result<List<BookVo>>>() {}).getDetail();
+        List<BookVo> result2 = restClientUtil.getForType(url, new ParameterizedTypeReference<Result<List<BookVo>>>() {}).getDetail();
         System.out.println("GET 1-2 => " + result2);
 
         // 传参替换
@@ -56,7 +57,7 @@ class BasicDemoTests {
         Result result = restTemplate.getForObject(url2, Result.class, 1);
         System.out.println("GET 2-1 => " + result);
 
-        Result<BookVo> result1 = getForType(url2, new ParameterizedTypeReference<Result<BookVo>>() {}, 1);
+        Result<BookVo> result1 = restClientUtil.getForType(url2, new ParameterizedTypeReference<Result<BookVo>>() {}, 1);
         System.out.println("GET 2-2 => " + result1);
 
         // map传参
@@ -67,7 +68,7 @@ class BasicDemoTests {
         result = restTemplate.getForObject(url3, Result.class, params);
         System.out.println("GET 3-1 => " + result);
 
-        result = getForType(url3, new ParameterizedTypeReference<Result<BookVo>>() {}, params);
+        result = restClientUtil.getForType(url3, new ParameterizedTypeReference<Result<BookVo>>() {}, params);
         System.out.println("GET 3-2 => " + result);
     }
 
@@ -95,7 +96,7 @@ class BasicDemoTests {
         Result result = restTemplate.postForObject(url, request, Result.class);
         System.out.println("POST 1-1 => " + result);
 
-        Result<Long> result1 = postForType(url, request, new ParameterizedTypeReference<Result<Long>>() {});
+        Result<Long> result1 = restClientUtil.postForType(url, request, new ParameterizedTypeReference<Result<Long>>() {});
         System.out.println("POST 1-2 => " + result1);
 
         // 结合表单参数和uri参数的方式
@@ -110,7 +111,7 @@ class BasicDemoTests {
         result = restTemplate.postForObject(url + "?title={title}", request, Result.class, params);
         System.out.println("POST 3-1 => " + result);
 
-        result = postForType(url + "?title={title}", request, new ParameterizedTypeReference<Result<Long>>() {}, params);
+        result = restClientUtil.postForType(url + "?title={title}", request, new ParameterizedTypeReference<Result<Long>>() {}, params);
         System.out.println("POST 3-2 => " + result);
 
     }
@@ -132,7 +133,7 @@ class BasicDemoTests {
         Result result = restTemplate.postForObject(url, request, Result.class);
         System.out.println("POST 4-1 => " + result);
 
-        Result<Long> result1 = postForType(url, request, new ParameterizedTypeReference<Result<Long>>() {});
+        Result<Long> result1 = restClientUtil.postForType(url, request, new ParameterizedTypeReference<Result<Long>>() {});
         System.out.println("POST 4-2 => " + result1);
     }
 
@@ -141,7 +142,7 @@ class BasicDemoTests {
         String url = URL + "/agent?name=哈哈~";
         RestTemplate restTemplate = new RestTemplate();
         // 注释后会抛出 HttpClientErrorException
-                restTemplate.setInterceptors(Collections.singletonList(new UserAgentInterceptor()));
+        restTemplate.setInterceptors(Collections.singletonList(new UserAgentInterceptor()));
         ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
         System.out.println("GET HEADER => " + response.getStatusCode() + " | " + response.getBody());
     }
@@ -153,8 +154,8 @@ class BasicDemoTests {
         params.add("name", "O(∩_∩)O哈哈~");
 
         HttpHeaders headers = new HttpHeaders();
-                headers.add(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36");
+        headers.add(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36");
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
         RestTemplate restTemplate = new RestTemplate();
@@ -180,57 +181,13 @@ class BasicDemoTests {
         String url = URL + "/apiError";
         Result<BookVo> result = null;
         try {
-            result = getForType(url, new ParameterizedTypeReference<Result<BookVo>>() {});
+            result = restClientUtil.getForType(url, new ParameterizedTypeReference<Result<BookVo>>() {});
         } catch (ApiCodeException e) {
             e.printStackTrace();
-            System.out.println("=> "+e.getMessage());
+            System.out.println("=> " + e.getMessage());
         }
         System.out.println("GET 6-1 => " + result);
     }
 
-    public <T> T getForType(String url, ParameterizedTypeReference<T> responseType, Object... uriVariables) throws ApiCodeException {
-        T body = restTemplate.exchange(url, HttpMethod.GET, null, responseType, uriVariables).getBody();
-        handleApiError(body);
-        return body;
-    }
-
-    public <T> T getForType(String url, ParameterizedTypeReference<T> responseType, Map<String, ?> uriVariables) {
-        return restTemplate.exchange(url, HttpMethod.GET, null, responseType, uriVariables).getBody();
-    }
-
-    public <T> T postForType(String url, @Nullable Object request, ParameterizedTypeReference<T> responseType, Object... uriVariables) throws ApiCodeException {
-        HttpEntity<?> requestEntity = getHttpEntity(request);
-        T body = restTemplate.exchange(url, HttpMethod.POST, requestEntity, responseType, uriVariables).getBody();
-        handleApiError(body);
-        return body;
-    }
-
-    public <T> T postForType(String url, @Nullable Object request, ParameterizedTypeReference<T> responseType, Map<String, ?> uriVariables) throws ApiCodeException {
-        HttpEntity<?> requestEntity = getHttpEntity(request);
-        T body = restTemplate.exchange(url, HttpMethod.POST, requestEntity, responseType, uriVariables).getBody();
-        handleApiError(body);
-        return body;
-    }
-
-    private HttpEntity<?> getHttpEntity(@Nullable Object request) {
-        HttpEntity<?> requestEntity;
-        if (request instanceof HttpEntity) {
-            requestEntity = (HttpEntity<?>) request;
-        } else if (request != null) {
-            requestEntity = new HttpEntity<>(request);
-        } else {
-            requestEntity = HttpEntity.EMPTY;
-        }
-        return requestEntity;
-    }
-
-    private <T> void handleApiError(T body) throws ApiCodeException {
-        if (body instanceof Result) {
-            Result result = (Result) body;
-            if (!result.isSuccess()) {
-                throw new ApiCodeException(result.getCode(), result.getMsg());
-            }
-        }
-    }
 
 }
