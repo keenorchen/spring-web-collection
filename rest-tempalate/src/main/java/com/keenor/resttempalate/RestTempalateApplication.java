@@ -8,9 +8,6 @@ import org.springframework.web.client.RestTemplate;
 @SpringBootApplication
 public class RestTempalateApplication {
 
-    @Autowired
-    RestTemplate restTemplate;
-
     public static void main(String[] args) {
         SpringApplication.run(RestTempalateApplication.class, args);
     }

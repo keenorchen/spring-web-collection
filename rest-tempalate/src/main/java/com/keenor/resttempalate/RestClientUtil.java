@@ -3,12 +3,12 @@ package com.keenor.resttempalate;
 import com.keenor.resttempalate.exception.ApiCodeException;
 import com.keenor.resttempalate.pojo.Result;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
@@ -18,31 +18,37 @@ public class RestClientUtil {
 
     RestTemplate restTemplate = new RestTemplate();
 
-    public <T> T getForType(String url, ParameterizedTypeReference<T> responseType, Object... uriVariables) throws ApiCodeException {
+    public <T> T getForType(String url, ParameterizedTypeReference<T> responseType, Object... uriVariables)
+            throws RestClientException, ApiCodeException {
         T body = restTemplate.exchange(url, HttpMethod.GET, null, responseType, uriVariables).getBody();
         handleApiError(body);
         return body;
     }
 
-    public <T> T getForType(String url, ParameterizedTypeReference<T> responseType, Map<String, ?> uriVariables) {
-        return restTemplate.exchange(url, HttpMethod.GET, null, responseType, uriVariables).getBody();
+    public <T> T getForType(String url, ParameterizedTypeReference<T> responseType, Map<String, ?> uriVariables)
+            throws RestClientException, ApiCodeException {
+        T body = restTemplate.exchange(url, HttpMethod.GET, null, responseType, uriVariables).getBody();
+        handleApiError(body);
+        return body;
     }
 
-    public <T> T postForType(String url, @Nullable Object request, ParameterizedTypeReference<T> responseType, Object... uriVariables) throws ApiCodeException {
+    public <T> T postForType(String url, @Nullable Object request, ParameterizedTypeReference<T> responseType, Object... uriVariables)
+            throws RestClientException, ApiCodeException {
         HttpEntity<?> requestEntity = getHttpEntity(request);
         T body = restTemplate.exchange(url, HttpMethod.POST, requestEntity, responseType, uriVariables).getBody();
         handleApiError(body);
         return body;
     }
 
-    public <T> T postForType(String url, @Nullable Object request, ParameterizedTypeReference<T> responseType, Map<String, ?> uriVariables) throws ApiCodeException {
+    public <T> T postForType(String url, @Nullable Object request, ParameterizedTypeReference<T> responseType, Map<String, ?> uriVariables)
+            throws RestClientException, ApiCodeException {
         HttpEntity<?> requestEntity = getHttpEntity(request);
         T body = restTemplate.exchange(url, HttpMethod.POST, requestEntity, responseType, uriVariables).getBody();
         handleApiError(body);
         return body;
     }
 
-    HttpEntity<?> getHttpEntity(@Nullable Object request) {
+    private HttpEntity<?> getHttpEntity(@Nullable Object request) {
         HttpEntity<?> requestEntity;
         if (request instanceof HttpEntity) {
             requestEntity = (HttpEntity<?>) request;
@@ -54,7 +60,7 @@ public class RestClientUtil {
         return requestEntity;
     }
 
-    <T> void handleApiError(T body) throws ApiCodeException {
+    private <T> void handleApiError(T body) throws ApiCodeException {
         if (body instanceof Result) {
             Result result = (Result) body;
             if (!result.isSuccess()) {
@@ -62,4 +68,6 @@ public class RestClientUtil {
             }
         }
     }
+
+
 }

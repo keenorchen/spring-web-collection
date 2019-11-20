@@ -19,6 +19,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
@@ -48,7 +49,12 @@ class BasicDemoTests {
         BookWrapVo wrapVo = restTemplate.getForObject(url, BookWrapVo.class);
         System.out.println("GET 1-1 => " + wrapVo);
 
-        List<BookVo> result2 = restClientUtil.getForType(url, new ParameterizedTypeReference<Result<List<BookVo>>>() {}).getDetail();
+        List<BookVo> result2 = null;
+        try {
+            result2 = restClientUtil.getForType(url, new ParameterizedTypeReference<Result<List<BookVo>>>() {}).getDetail();
+        } catch (RestClientException | ApiCodeException e) {
+            e.printStackTrace();
+        }
         System.out.println("GET 1-2 => " + result2);
 
         // 传参替换
