@@ -1,6 +1,3 @@
-HELP.md
-.gradle
-build/
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**
@@ -20,7 +17,6 @@ target/
 *.iws
 *.iml
 *.ipr
-out/
 
 ### NetBeans ###
 /nbproject/private/
@@ -28,8 +24,7 @@ out/
 /dist/
 /nbdist/
 /.nb-gradle/
+build/
 
 ### VS Code ###
 .vscode/
-
-upload-dir
