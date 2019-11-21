@@ -14,4 +14,4 @@ jobs:
       with:
         java-version: 1.8
     - name: Build with Maven
-      run: cd rest-tempalate && mvn -B package --file pom.xml
+      run: cd rest-tempalate && mvn clean package -B -DskipTests --file pom.xml
